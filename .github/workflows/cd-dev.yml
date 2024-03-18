@@ -1,0 +1,5 @@
+# injetar secrets nos scripts
+  # login -> COGNITO_CLIENT_ID
+  # create-user -> COGNITO_CLIENT_ID e USER_POOL_ID
+  # identify-client -> USER_POOL_ID
+# copiar script para o caminho do s3 do lambda
