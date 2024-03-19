@@ -49,6 +49,8 @@ jobs:
           echo $major
           echo $minor
           echo $patch
+          ((patch++))
+          echo $patch
       - name: "Faz o release da Tag"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
