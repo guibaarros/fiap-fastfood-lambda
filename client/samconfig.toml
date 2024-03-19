@@ -4,7 +4,7 @@ version = 0.1
 
 [default]
 [default.global.parameters]
-stack_name = "fiap-fastfood-lambda-functions"
+stack_name = "fiap-fastfood-lambda-functions-{{ENVIRONMENT}}"
 
 [default.build.parameters]
 cached = true
@@ -14,9 +14,9 @@ parallel = true
 lint = true
 
 [default.deploy.parameters]
-stack_name = "fiap-fastfood-lambda-functions"
+stack_name = "fiap-fastfood-lambda-functions-{{ENVIRONMENT}}"
 resolve_s3 = true
-s3_prefix = "fiap-fastfood-lambda-functions"
+s3_prefix = "fiap-fastfood-lambda-functions-{{ENVIRONMENT}}"
 region = "us-east-1"
 confirm_changeset = true
 capabilities = "CAPABILITY_IAM"
