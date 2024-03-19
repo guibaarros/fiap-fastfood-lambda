@@ -40,7 +40,7 @@ jobs:
           git config user.email "<>"
           git branch
           git status
-          git tags
+          git tag
           current_version=$(git tag | sort -V | tail -n 1)
           echo $current_version
       - name: "Faz o release da Tag"
