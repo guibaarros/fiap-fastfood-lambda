@@ -26,7 +26,7 @@ jobs:
   release-tag:
     name: "Executa o release da tag"
     runs-on: ubuntu-latest
-    # needs: [ sam-validate ]
+    needs: [ sam-validate ]
     steps:
       - uses: actions/checkout@v3
         with:
