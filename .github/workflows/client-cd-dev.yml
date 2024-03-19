@@ -38,6 +38,11 @@ jobs:
           git --version
           git config user.name "github-actions-cd"
           git config user.email "<>"
+          git branch
+          git status
+          git tags
+          current_version=$(git tag | sort -V | tail -n 1)
+          echo $current_version
       - name: "Faz o release da Tag"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
