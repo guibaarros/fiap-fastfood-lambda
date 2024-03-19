@@ -43,6 +43,8 @@ jobs:
             sed -i "s/{{USER_POOL_ID}}/${{ secrets.USER_POOL_ID_QA }}/g" ./client/$item/app.py
           done
       - name: "Injeta o ambiente"
-        run: sed -i "s/{{ENVIRONMENT}}/qa/g" ./client/template.yaml
+        run: |
+          sed -i "s/{{ENVIRONMENT}}/qa/g" ./client/template.yaml
+          sed -i "s/{{ENVIRONMENT}}/qa/g" ./client/samconfig.toml
       - name: "Executa o SAM Deploy"
         run: sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --template-file ./client/template.yaml
