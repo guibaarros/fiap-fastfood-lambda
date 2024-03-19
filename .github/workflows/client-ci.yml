@@ -39,5 +39,5 @@ jobs:
             aws-region: ${{ secrets.AWS_REGION }}
       - name: "Injeta o ambiente"
         run: sed -i "s/{{ENVIRONMENT}}/ci/g" ./client/template.yaml
-      - name: "Executa o SAM Validate"
+      - name: "Executa o SAM Build"
         run: sam build --template-file ./client/template.yaml
