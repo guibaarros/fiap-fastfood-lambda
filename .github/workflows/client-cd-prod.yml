@@ -1,0 +1,50 @@
+name: "Delivery Contínuo - Client - SAM"
+on:
+  push:
+    branches:
+      - "main"
+
+jobs:
+  sam-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
+      - uses: aws-actions/setup-sam@v2
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+            aws-region: ${{ secrets.AWS_REGION }}
+      - name: "Injeta o ambiente"
+        run: sed -i "s/{{ENVIRONMENT}}/prod/g" ./client/template.yaml      
+      - name: "Executa o SAM Validate"
+        run: sam validate --template-file ./client/template.yaml
+
+  deploy-sam:
+    runs-on: ubuntu-latest
+    needs: [sam-validate]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
+      - uses: aws-actions/setup-sam@v2
+      - uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      - name: "Injeta os secrets"
+        run: |
+          for item in "create" "identify" "login"; do
+            sed -i "s/{{USER_POOL_CLIENT_ID}}/${{ secrets.USER_POOL_CLIENT_ID_PROD }}/g" ./client/$item/app.py
+            sed -i "s/{{USER_POOL_ID}}/${{ secrets.USER_POOL_ID_PROD }}/g" ./client/$item/app.py
+          done
+      - name: "Injeta o ambiente"
+        run: |
+          sed -i "s/{{ENVIRONMENT}}/prod/g" ./client/template.yaml
+          sed -i "s/{{ENVIRONMENT}}/prod/g" ./client/samconfig.toml
+      - name: "Executa o SAM Deploy"
+        run: sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --template-file ./client/template.yaml
