@@ -43,7 +43,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           current_version=$(git tag | sort -V | tail -n 1)
-          if [ -z "$current_version" ]; then current_version=1.0.0; fi
           major=$(echo $current_version | cut -d. -f1)
           minor=$(echo $current_version | cut -d. -f2)
           patch=$(echo $current_version | cut -d. -f3)
