@@ -18,7 +18,8 @@ jobs:
             aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
             aws-region: ${{ secrets.AWS_REGION }}
-      
+      - name: "Injeta o ambiente"
+        run: sed -i "s/{{ENVIRONMENT}}/qa/g" ./client/template.yaml            
       - name: "Executa o SAM Validate"
         run: sam validate --template-file ./client/template.yaml
 
@@ -33,7 +34,8 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ secrets.AWS_REGION }}
       - name: "Injeta os secrets"
         run: |
           for item in "create" "identify" "login"; do
@@ -41,9 +43,6 @@ jobs:
             sed -i "s/{{USER_POOL_ID}}/${{ secrets.USER_POOL_ID_QA }}/g" ./client/$item/app.py
           done
       - name: "Injeta o ambiente"
-        run: |
-          sed -i "s/{{ENVIRONMENT}}/qa/g" ./client/template.yaml
-      - name: SAM Deploy
-        run: |
-          # Run SAM Deploy
-          sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --template-file ./client/template.yaml
+        run: sed -i "s/{{ENVIRONMENT}}/qa/g" ./client/template.yaml
+      - name: "Executa o SAM Deploy"
+        run: sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --template-file ./client/template.yaml
