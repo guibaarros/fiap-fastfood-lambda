@@ -1,0 +1,84 @@
+# injetar secrets nos scripts
+  # login -> COGNITO_CLIENT_ID
+  # create-user -> COGNITO_CLIENT_ID e USER_POOL_ID
+  # identify-client -> USER_POOL_ID
+# copiar script para o caminho do s3 do lambda
+name: "Delivery Contínuo - Client - SAM"
+on:
+  push:
+    branches:
+      - "development"
+
+jobs:
+  sam-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
+      - uses: aws-actions/setup-sam@v2
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+            aws-region: ${{ secrets.AWS_REGION }}
+      
+      - name: "Executa o SAM Validate"
+        run: sam validate --template-file ./client/template.yaml
+
+  release-tag:
+    name: "Executa o release da tag"
+    runs-on: ubuntu-latest
+    needs: [ sam-validate ]
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: "Configura o Git"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git --version
+          git config user.name "github-actions-cd"
+          git config user.email "<>"
+      - name: "Faz o release da Tag"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          current_version=$(git tag | sort -V | tail -n 1)
+          if [ -z "$current_version" ]; then current_version=1.0.0; fi
+          major=$(echo $current_version | cut -d. -f1)
+          minor=$(echo $current_version | cut -d. -f2)
+          patch=$(echo $current_version | cut -d. -f3)
+          ((patch++))
+          export VERSION="${major}.${minor}.${patch}"
+          git branch
+          git tag $VERSION
+          git push --tags
+
+  deploy-sam:
+    runs-on: ubuntu-latest
+    needs: [ release-tag ]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
+      - uses: aws-actions/setup-sam@v2
+      - uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      - name: "Injeta os secrets"
+        run: |
+          for item in "create" "identify" "login"; do
+            sed -i "s/{{USER_POOL_CLIENT_ID}}/${{ secrets.USER_POOL_CLIENT_ID_DEV }}/g" ./client/$item/app.py
+            sed -i "s/{{USER_POOL_ID}}/${{ secrets.USER_POOL_ID_DEV }}/g" ./client/$item/app.py
+          done
+      - name: "Injeta o ambiente"
+        run: |
+          sed -i "s/{{ENVIRONMENT}}/dev/g" ./client/template.yaml
+      - name: SAM Deploy
+        run: |
+          # Run SAM Deploy
+          sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --template-file ./client/template.yaml

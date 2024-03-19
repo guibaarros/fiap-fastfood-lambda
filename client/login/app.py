@@ -16,7 +16,7 @@ def lambda_handler(event, context):
                 'USERNAME': email,
                 'PASSWORD': password
             },
-            ClientId='{{COGNITO_CLIENT_ID}}'
+            ClientId='{{USER_POOL_CLIENT_ID}}'
         )
         return {
             'statusCode': 200,

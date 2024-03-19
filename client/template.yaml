@@ -1,0 +1,64 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  fiap-fastfood-client-lambda
+
+Globals:
+  Function:
+    Timeout: 3
+
+Resources:
+  FiapFastFoodLoginLambdaFunction{{ENVIRONMENT}}:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: fiap-fastfood-login-lambda-{{ENVIRONMENT}}
+      Description: Função Lambda para login do cliente no Cognito
+      CodeUri: login/
+      Handler: app.lambda_handler
+      Runtime: python3.10
+      Role: arn:aws:iam::992382573086:role/LabRole
+      Architectures:
+        - x86_64
+      Events:
+        ClientLogin:
+          Type: HttpApi
+          Properties:
+            Path: /client/login
+            Method: post
+
+
+  FiapFastFoodCreateUserLambdaFunction{{ENVIRONMENT}}:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: fiap-fastfood-create-user-lambda-{{ENVIRONMENT}}
+      Description: Função Lambda para criação do usuário no Cognito
+      CodeUri: create/
+      Handler: app.lambda_handler
+      Runtime: python3.10
+      Role: arn:aws:iam::992382573086:role/LabRole
+      Architectures:
+        - x86_64
+      Events:
+        CreateUser:
+          Type: HttpApi
+          Properties:
+            Path: /client
+            Method: post
+
+  FiapFastFoodIdentifyClientLambdaFunction{{ENVIRONMENT}}:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: fiap-fastfood-identify-client-lambda-{{ENVIRONMENT}}
+      Description: Função Lambda para login do usuário no Cognito
+      CodeUri: identify/
+      Handler: app.lambda_handler
+      Runtime: python3.10
+      Role: arn:aws:iam::992382573086:role/LabRole
+      Architectures:
+        - x86_64
+      Events:
+        IdentifyClient:
+          Type: HttpApi
+          Properties:
+            Path: /client/{username}
+            Method: get

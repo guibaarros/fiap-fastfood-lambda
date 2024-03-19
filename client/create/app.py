@@ -17,7 +17,7 @@ def lambda_handler(event, context):
     
     try:
         response = cognito.sign_up(
-            ClientId='{{COGNITO_CLIENT_ID}}',
+            ClientId='{{USER_POOL_CLIENT_ID}}',
             Username=email,
             Password=password,
             UserAttributes=[
